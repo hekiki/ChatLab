@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { getRankBadgeClass, getRankBarColor } from '@/utils'
 
 export interface RankItem {
   id: string
@@ -32,29 +33,6 @@ function getRelativePercentage(index: number): number {
   if (maxValue === 0) return 0
   return Math.round((displayMembers.value[index].value / maxValue) * 100)
 }
-
-// 获取排名样式
-function getRankStyle(index: number): string {
-  if (index === 0) return 'bg-linear-to-r from-amber-400 to-orange-500 text-white'
-  if (index === 1) return 'bg-linear-to-r from-gray-300 to-gray-400 text-white'
-  if (index === 2) return 'bg-linear-to-r from-amber-600 to-amber-700 text-white'
-  return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-}
-
-// 获取进度条颜色
-function getBarColor(index: number): string {
-  const colors = [
-    'from-amber-400 to-orange-500',
-    'from-gray-300 to-gray-400',
-    'from-amber-600 to-amber-700',
-    'from-pink-400 to-pink-600',
-    'from-pink-300 to-rose-500',
-    'from-cyan-400 to-blue-500',
-    'from-green-400 to-emerald-500',
-    'from-rose-400 to-pink-500',
-  ]
-  return colors[index % colors.length]
-}
 </script>
 
 <template>
@@ -67,7 +45,7 @@ function getBarColor(index: number): string {
       <!-- 排名 -->
       <div
         class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold"
-        :class="getRankStyle(index)"
+        :class="getRankBadgeClass(index)"
       >
         {{ index + 1 }}
       </div>
@@ -92,7 +70,7 @@ function getBarColor(index: number): string {
         <div class="h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800">
           <div
             class="h-full rounded-full bg-linear-to-r transition-all"
-            :class="getBarColor(index)"
+            :class="getRankBarColor(index)"
             :style="{ width: `${getRelativePercentage(index)}%` }"
           />
         </div>

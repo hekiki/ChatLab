@@ -7,10 +7,10 @@ import type { AnalysisSession, MemberActivity, HourlyActivity, DailyActivity, Me
 import { formatDateRange } from '@/utils'
 import UITabs from '@/components/UI/Tabs.vue'
 import OverviewTab from '@/components/analysis/OverviewTab.vue'
-import MembersTab from '@/components/analysis/MembersTab.vue'
-import TimeTab from '@/components/analysis/TimeTab.vue'
+import RankingTab from '@/components/analysis/RankingTab.vue'
 import TimelineTab from '@/components/analysis/TimelineTab.vue'
-import KeywordsTab from '@/components/analysis/KeywordsTab.vue'
+import QuotesTab from '@/components/analysis/QuotesTab.vue'
+import RelationshipsTab from '@/components/analysis/RelationshipsTab.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -34,10 +34,10 @@ const isInitialLoad = ref(true) // 用于跳过初始加载时的 watch 触发�
 // Tab 配置
 const tabs = [
   { id: 'overview', label: '总览', icon: 'i-heroicons-chart-pie' },
-  { id: 'members', label: '成员', icon: 'i-heroicons-user-group' },
-  { id: 'keywords', label: '关键词', icon: 'i-heroicons-document-text' },
-  { id: 'time', label: '规律', icon: 'i-heroicons-clock' },
-  { id: 'timeline', label: '趋势', icon: 'i-heroicons-chart-bar' },
+  { id: 'ranking', label: '群榜单', icon: 'i-heroicons-trophy' },
+  { id: 'relationships', label: '群关系', icon: 'i-heroicons-heart' },
+  { id: 'quotes', label: '群语录', icon: 'i-heroicons-chat-bubble-bottom-center-text' },
+  { id: 'timeline', label: '群趋势', icon: 'i-heroicons-chart-bar' },
 ]
 
 const activeTab = ref((route.query.tab as string) || 'overview')
@@ -123,7 +123,7 @@ async function loadBaseData() {
     // 2. 否则默认选择最近的年份（years 已按降序排列）
     // 3. 如果没有年份数据，选 0 (全部)
     const queryYear = Number(route.query.year)
-    if (queryYear && years.includes(queryYear)) {
+    if (queryYear === 0 || (queryYear && years.includes(queryYear))) {
       selectedYear.value = queryYear
     } else if (years.length > 0) {
       selectedYear.value = years[0]
@@ -213,7 +213,7 @@ watch([activeTab, selectedYear], ([newTab, newYear]) => {
     query: {
       ...route.query,
       tab: newTab,
-      year: newYear || undefined,
+      year: newYear,
     },
   })
 })
@@ -313,25 +313,25 @@ onMounted(() => {
               :selected-year="selectedYear"
               :filtered-message-count="filteredMessageCount"
               :filtered-member-count="filteredMemberCount"
+              :time-filter="timeFilter"
             />
-            <MembersTab
-              v-else-if="activeTab === 'members'"
-              :key="'members-' + selectedYear"
+            <RankingTab
+              v-else-if="activeTab === 'ranking'"
+              :key="'ranking-' + selectedYear"
               :session-id="currentSessionId!"
               :member-activity="memberActivity"
               :time-filter="timeFilter"
             />
-            <KeywordsTab
-              v-else-if="activeTab === 'keywords'"
-              :key="'keywords-' + selectedYear"
+            <RelationshipsTab
+              v-else-if="activeTab === 'relationships'"
+              :key="'relationships-' + selectedYear"
               :session-id="currentSessionId!"
               :time-filter="timeFilter"
             />
-            <TimeTab
-              v-else-if="activeTab === 'time'"
-              :key="'time-' + selectedYear"
+            <QuotesTab
+              v-else-if="activeTab === 'quotes'"
+              :key="'quotes-' + selectedYear"
               :session-id="currentSessionId!"
-              :hourly-activity="hourlyActivity"
               :time-filter="timeFilter"
             />
             <TimelineTab
@@ -339,6 +339,7 @@ onMounted(() => {
               :key="'timeline-' + selectedYear"
               :session-id="currentSessionId!"
               :daily-activity="dailyActivity"
+              :member-activity="memberActivity"
               :time-range="timeRange"
               :time-filter="timeFilter"
             />
