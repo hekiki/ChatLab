@@ -31,4 +31,6 @@ export {
   getAllSessions,
   getSession,
   closeDatabase,
+  // 文件解析 API（异步，用于合并功能）
+  parseFileInfo,
 } from './workerManager'

@@ -19,6 +19,10 @@ import type {
   LaughAnalysis,
   MemeBattleAnalysis,
   CheckInAnalysis,
+  FileParseInfo,
+  ConflictCheckResult,
+  MergeParams,
+  MergeResult,
 } from '../../src/types/chat'
 
 interface TimeFilter {
@@ -63,6 +67,15 @@ interface Api {
   send: (channel: string, data?: unknown) => void
   receive: (channel: string, func: (...args: unknown[]) => void) => void
   removeListener: (channel: string, func: (...args: unknown[]) => void) => void
+  dialog: {
+    showOpenDialog: (options: Electron.OpenDialogOptions) => Promise<Electron.OpenDialogReturnValue>
+  }
+}
+
+interface MergeApi {
+  parseFileInfo: (filePath: string) => Promise<FileParseInfo>
+  checkConflicts: (filePaths: string[]) => Promise<ConflictCheckResult>
+  mergeFiles: (params: MergeParams) => Promise<MergeResult>
 }
 
 declare global {
@@ -70,7 +83,8 @@ declare global {
     electron: ElectronAPI
     api: Api
     chatApi: ChatApi
+    mergeApi: MergeApi
   }
 }
 
-export { ChatApi, Api }
+export { ChatApi, Api, MergeApi }

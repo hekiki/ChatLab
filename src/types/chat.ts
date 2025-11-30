@@ -49,6 +49,7 @@ export enum ChatPlatform {
   WECHAT = 'wechat',
   TELEGRAM = 'telegram',
   DISCORD = 'discord',
+  MIXED = 'mixed', // 合并的多平台聊天记录
   UNKNOWN = 'unknown',
 }
 
@@ -682,4 +683,127 @@ export interface CheckInAnalysis {
   streakRank: StreakRankItem[] // 火花榜 - 连续发言天数排名
   loyaltyRank: LoyaltyRankItem[] // 忠臣榜 - 累计发言天数排名
   totalDays: number // 群聊总天数
+}
+
+// ==================== ChatLab 专属格式类型 ====================
+
+/**
+ * ChatLab 格式版本信息
+ */
+export interface ChatLabHeader {
+  version: string // 格式版本，如 "1.0.0"
+  exportedAt: number // 导出时间戳（秒）
+  generator: string // 生成工具名称
+}
+
+/**
+ * 合并来源信息
+ */
+export interface MergeSource {
+  filename: string // 原文件名
+  platform?: string // 原平台
+  messageCount: number // 消息数量
+}
+
+/**
+ * ChatLab 格式的元信息
+ */
+export interface ChatLabMeta {
+  name: string // 群名/对话名
+  platform: ChatPlatform // 平台（合并时为 mixed）
+  type: ChatType // 聊天类型
+  sources?: MergeSource[] // 合并来源（可选）
+}
+
+/**
+ * ChatLab 格式的成员
+ */
+export interface ChatLabMember {
+  platformId: string // 平台标识
+  name: string // 当前昵称
+  aliases?: string[] // 历史昵称（可选）
+}
+
+/**
+ * ChatLab 格式的消息
+ */
+export interface ChatLabMessage {
+  sender: string // 发送者 platformId
+  name: string // 发送时的昵称
+  timestamp: number // 时间戳（秒）
+  type: MessageType // 消息类型
+  content: string | null // 内容
+}
+
+/**
+ * ChatLab 专属格式文件结构
+ */
+export interface ChatLabFormat {
+  chatlab: ChatLabHeader
+  meta: ChatLabMeta
+  members: ChatLabMember[]
+  messages: ChatLabMessage[]
+}
+
+// ==================== 合并相关类型 ====================
+
+/**
+ * 文件解析信息（用于合并前预览）
+ */
+export interface FileParseInfo {
+  name: string // 群名
+  format: string // 格式名称
+  platform: string // 平台
+  messageCount: number // 消息数量
+  memberCount: number // 成员数量
+}
+
+/**
+ * 合并冲突项
+ */
+export interface MergeConflict {
+  id: string // 冲突ID
+  timestamp: number // 时间戳
+  sender: string // 发送者
+  contentLength1: number // 内容1长度
+  contentLength2: number // 内容2长度
+  content1: string // 内容1
+  content2: string // 内容2
+}
+
+/**
+ * 冲突检测结果
+ */
+export interface ConflictCheckResult {
+  conflicts: MergeConflict[]
+  totalMessages: number // 合并后预计消息数
+}
+
+/**
+ * 冲突解决方案
+ */
+export interface ConflictResolution {
+  id: string
+  resolution: 'keep1' | 'keep2' | 'keepBoth'
+}
+
+/**
+ * 合并参数
+ */
+export interface MergeParams {
+  filePaths: string[]
+  outputName: string
+  outputDir?: string
+  conflictResolutions: ConflictResolution[]
+  andAnalyze: boolean
+}
+
+/**
+ * 合并结果
+ */
+export interface MergeResult {
+  success: boolean
+  outputPath?: string
+  sessionId?: string // 如果选择了分析，返回会话ID
+  error?: string
 }

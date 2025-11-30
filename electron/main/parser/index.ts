@@ -5,14 +5,16 @@
 
 import * as fs from 'fs'
 import type { ChatParser } from './types'
+import { chatlabJsonParser } from './chatlabJsonParser'
 import { qqJsonParser } from './qqJsonParser'
 import { qqTxtParser } from './qqTxtParser'
 import type { ParseResult } from '../../../src/types/chat'
 
 // 注册所有解析器（按优先级排序）
 const parsers: ChatParser[] = [
-  qqJsonParser, // JSON 格式优先
-  qqTxtParser // TXT 格式兜底
+  chatlabJsonParser, // ChatLab 格式最优先
+  qqJsonParser, // QQ JSON 格式
+  qqTxtParser, // TXT 格式兜底
 ]
 
 /**
@@ -64,10 +66,9 @@ export function detectFormat(filePath: string): string | null {
 export function getSupportedFormats(): Array<{ name: string; platform: string }> {
   return parsers.map((p) => ({
     name: p.name,
-    platform: p.platform
+    platform: p.platform,
   }))
 }
 
 // 导出类型
 export type { ChatParser, ParseError } from './types'
-

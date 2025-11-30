@@ -20,6 +20,10 @@ import type {
   LaughAnalysis,
   CheckInAnalysis,
   MemeBattleAnalysis,
+  FileParseInfo,
+  ConflictCheckResult,
+  MergeParams,
+  MergeResult,
 } from '../../src/types/chat'
 
 // Custom APIs for renderer
@@ -275,14 +279,49 @@ const chatApi = {
   },
 }
 
+// Merge API - 合并功能
+const mergeApi = {
+  /**
+   * 解析文件获取基本信息（用于合并预览）
+   */
+  parseFileInfo: (filePath: string): Promise<FileParseInfo> => {
+    return ipcRenderer.invoke('merge:parseFileInfo', filePath)
+  },
+
+  /**
+   * 检测合并冲突
+   */
+  checkConflicts: (filePaths: string[]): Promise<ConflictCheckResult> => {
+    return ipcRenderer.invoke('merge:checkConflicts', filePaths)
+  },
+
+  /**
+   * 执行合并
+   */
+  mergeFiles: (params: MergeParams): Promise<MergeResult> => {
+    return ipcRenderer.invoke('merge:mergeFiles', params)
+  },
+}
+
+// 扩展 api，添加 dialog 功能
+const extendedApi = {
+  ...api,
+  dialog: {
+    showOpenDialog: (options: Electron.OpenDialogOptions): Promise<Electron.OpenDialogReturnValue> => {
+      return ipcRenderer.invoke('dialog:showOpenDialog', options)
+    },
+  },
+}
+
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
 // just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('api', extendedApi)
     contextBridge.exposeInMainWorld('chatApi', chatApi)
+    contextBridge.exposeInMainWorld('mergeApi', mergeApi)
   } catch (error) {
     console.error(error)
   }
@@ -290,7 +329,9 @@ if (process.contextIsolated) {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
-  window.api = api
+  window.api = extendedApi
   // @ts-ignore (define in dts)
   window.chatApi = chatApi
+  // @ts-ignore (define in dts)
+  window.mergeApi = mergeApi
 }

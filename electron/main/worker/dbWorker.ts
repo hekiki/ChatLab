@@ -36,6 +36,28 @@ import {
   getMemeBattleAnalysis,
   getCheckInAnalysis,
 } from './queryAdvanced'
+import { parseFile, detectFormat } from '../parser'
+import type { FileParseInfo } from '../../../src/types/chat'
+
+/**
+ * 解析文件获取基本信息（在 Worker 线程中执行，不阻塞主进程）
+ */
+function parseFileInfo(filePath: string): FileParseInfo {
+  const format = detectFormat(filePath)
+  if (!format) {
+    throw new Error('无法识别文件格式')
+  }
+
+  const result = parseFile(filePath)
+
+  return {
+    name: result.meta.name,
+    format,
+    platform: result.meta.platform,
+    messageCount: result.messages.length,
+    memberCount: result.members.length,
+  }
+}
 
 // 初始化数据库目录
 initDbDir(workerData.dbDir)
@@ -50,6 +72,9 @@ interface WorkerMessage {
 
 // 消息类型到处理函数的映射
 const handlers: Record<string, (payload: any) => any> = {
+  // 文件解析（合并功能使用）
+  parseFileInfo: (p) => parseFileInfo(p.filePath),
+
   // 基础查询
   getAvailableYears: (p) => getAvailableYears(p.sessionId),
   getMemberActivity: (p) => getMemberActivity(p.sessionId, p.filter),

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useChatStore } from '@/stores/chat'
+import { FileDropZone } from '@/components/UI'
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
@@ -8,7 +9,6 @@ const chatStore = useChatStore()
 const { isImporting, importProgress } = storeToRefs(chatStore)
 
 const importError = ref<string | null>(null)
-const isDragOver = ref(false)
 
 const features = [
   {
@@ -39,7 +39,8 @@ const features = [
 
 const router = useRouter()
 
-async function handleImport() {
+// 处理文件选择（点击选择）
+async function handleClickImport() {
   importError.value = null
   const result = await chatStore.importFile()
   if (!result.success && result.error && result.error !== '未选择文件') {
@@ -49,48 +50,15 @@ async function handleImport() {
   }
 }
 
-// 拖拽事件处理
-function handleDragOver(e: DragEvent) {
-  e.preventDefault()
-  e.stopPropagation()
-  isDragOver.value = true
-}
-
-function handleDragLeave(e: DragEvent) {
-  e.preventDefault()
-  e.stopPropagation()
-  isDragOver.value = false
-}
-
-async function handleDrop(e: DragEvent) {
-  e.preventDefault()
-  e.stopPropagation()
-  isDragOver.value = false
-
-  if (isImporting.value) return
-
-  const files = e.dataTransfer?.files
-  if (!files || files.length === 0) return
-
-  const file = files[0]
-
-  // 使用 Electron 的 webUtils 获取文件真实路径
-  let filePath: string
-  try {
-    filePath = window.electron.webUtils.getPathForFile(file)
-  } catch (error) {
-    console.error('获取文件路径失败:', error)
-    importError.value = '无法读取文件路径'
-    return
-  }
-
-  if (!filePath) {
+// 处理文件拖拽
+async function handleFileDrop({ paths }: { files: File[]; paths: string[] }) {
+  if (paths.length === 0) {
     importError.value = '无法读取文件路径'
     return
   }
 
   importError.value = null
-  const result = await chatStore.importFileFromPath(filePath)
+  const result = await chatStore.importFileFromPath(paths[0])
   if (!result.success && result.error) {
     importError.value = result.error
   } else if (result.success && chatStore.currentSessionId) {
@@ -133,7 +101,7 @@ function getProgressText(): string {
         >
           ChatLab
         </h1>
-        <p class="text-lg font-medium text-gray-500 dark:text-gray-400">你的AI聊天分析实验室</p>
+        <p class="text-lg font-medium text-gray-500 dark:text-gray-400">你的本地聊天分析实验室</p>
       </div>
 
       <!-- Feature Cards -->
@@ -155,54 +123,64 @@ function getProgressText(): string {
       <!-- Actions -->
       <div class="flex flex-col items-center space-y-6">
         <!-- Import Drop Zone -->
-        <div
-          class="group relative flex w-full max-w-2xl cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-pink-300 bg-white px-12 py-12 transition-all duration-300 hover:border-pink-400 hover:bg-pink-50/50 focus:outline-none focus:ring-4 focus:ring-pink-500/20 dark:border-pink-700 dark:bg-gray-900 dark:hover:border-pink-500 dark:hover:bg-pink-900/10"
-          :class="{
-            'border-pink-500 bg-pink-50 dark:border-pink-400 dark:bg-pink-900/20': isDragOver && !isImporting,
-            'cursor-not-allowed opacity-70': isImporting,
-            'hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-500/10': !isImporting,
-          }"
-          @click="!isImporting && handleImport()"
-          @dragover="handleDragOver"
-          @dragleave="handleDragLeave"
-          @drop="handleDrop"
+        <FileDropZone
+          :accept="['.json', '.txt']"
+          :disabled="isImporting"
+          class="w-full max-w-2xl"
+          @files="handleFileDrop"
         >
-          <!-- Icon -->
-          <div
-            class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-rose-100 transition-transform duration-300 dark:from-pink-900/30 dark:to-rose-900/30"
-            :class="{ 'scale-110': isDragOver && !isImporting, 'animate-pulse': isImporting }"
-          >
-            <UIcon
-              v-if="!isImporting"
-              name="i-heroicons-arrow-up-tray"
-              class="h-8 w-8 text-pink-600 transition-transform group-hover:-translate-y-1 dark:text-pink-400"
-            />
-            <UIcon v-else name="i-heroicons-arrow-path" class="h-8 w-8 animate-spin text-pink-600 dark:text-pink-400" />
-          </div>
-
-          <!-- Text -->
-          <div class="w-full text-center">
-            <template v-if="isImporting && importProgress">
-              <!-- 导入中显示进度 -->
-              <p class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{{ getProgressText() }}</p>
-              <div class="mx-auto w-full max-w-md">
-                <UProgress v-model="importProgress.progress" size="md" />
+          <template #default="{ isDragOver, openFileDialog }">
+            <div
+              class="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-pink-300 bg-white px-12 py-12 transition-all duration-300 hover:border-pink-400 hover:bg-pink-50/50 focus:outline-none focus:ring-4 focus:ring-pink-500/20 dark:border-pink-700 dark:bg-gray-900 dark:hover:border-pink-500 dark:hover:bg-pink-900/10"
+              :class="{
+                'border-pink-500 bg-pink-50 dark:border-pink-400 dark:bg-pink-900/20': isDragOver && !isImporting,
+                'cursor-not-allowed opacity-70': isImporting,
+                'hover:scale-[1.02] hover:shadow-xl hover:shadow-pink-500/10': !isImporting,
+              }"
+              @click="!isImporting && handleClickImport()"
+            >
+              <!-- Icon -->
+              <div
+                class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-rose-100 transition-transform duration-300 dark:from-pink-900/30 dark:to-rose-900/30"
+                :class="{ 'scale-110': isDragOver && !isImporting, 'animate-pulse': isImporting }"
+              >
+                <UIcon
+                  v-if="!isImporting"
+                  name="i-heroicons-arrow-up-tray"
+                  class="h-8 w-8 text-pink-600 transition-transform group-hover:-translate-y-1 dark:text-pink-400"
+                />
+                <UIcon
+                  v-else
+                  name="i-heroicons-arrow-path"
+                  class="h-8 w-8 animate-spin text-pink-600 dark:text-pink-400"
+                />
               </div>
-              <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                {{ importProgress.message }}
-              </p>
-            </template>
-            <template v-else>
-              <!-- 默认状态 -->
-              <p class="text-lg font-semibold text-gray-900 dark:text-white">
-                {{ isDragOver ? '松开鼠标导入文件' : '点击选择或拖拽文件到这里' }}
-              </p>
-              <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                支持 QQ、微信、Discord、Snapchat、Reddit、TikTok 等聊天记录（JSON/TXT 格式）
-              </p>
-            </template>
-          </div>
-        </div>
+
+              <!-- Text -->
+              <div class="w-full text-center">
+                <template v-if="isImporting && importProgress">
+                  <!-- 导入中显示进度 -->
+                  <p class="mb-4 text-lg font-semibold text-gray-900 dark:text-white">{{ getProgressText() }}</p>
+                  <div class="mx-auto w-full max-w-md">
+                    <UProgress v-model="importProgress.progress" size="md" />
+                  </div>
+                  <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    {{ importProgress.message }}
+                  </p>
+                </template>
+                <template v-else>
+                  <!-- 默认状态 -->
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">
+                    {{ isDragOver ? '松开鼠标导入文件' : '点击选择或拖拽文件到这里' }}
+                  </p>
+                  <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    支持 QQ、微信、Discord、Snapchat、Reddit、TikTok 等聊天记录（JSON/TXT 格式）
+                  </p>
+                </template>
+              </div>
+            </div>
+          </template>
+        </FileDropZone>
 
         <!-- Error Message -->
         <div

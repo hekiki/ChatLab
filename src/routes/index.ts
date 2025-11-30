@@ -12,6 +12,11 @@ export const router = createRouter({
       name: 'chat',
       component: () => import('@/pages/chat.vue'),
     },
+    {
+      path: '/tools',
+      name: 'tools',
+      component: () => import('@/pages/tools.vue'),
+    },
   ],
   history: createWebHashHistory(),
 })

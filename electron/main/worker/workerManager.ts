@@ -260,6 +260,13 @@ export async function closeDatabase(sessionId: string): Promise<void> {
 }
 
 /**
+ * 解析文件获取基本信息（在 Worker 线程中执行）
+ */
+export async function parseFileInfo(filePath: string): Promise<any> {
+  return sendToWorker('parseFileInfo', { filePath })
+}
+
+/**
  * 获取数据库目录（供外部使用）
  */
 export function getDbDirectory(): string {

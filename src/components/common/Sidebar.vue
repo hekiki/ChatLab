@@ -84,6 +84,26 @@ function cancelDelete() {
           <span v-if="!isCollapsed" class="truncate">分析新聊天</span>
         </UButton>
       </UTooltip>
+
+      <!-- Tools Button -->
+      <UTooltip :text="isCollapsed ? '工具广场' : ''" :popper="{ placement: 'right' }">
+        <UButton
+          :block="!isCollapsed"
+          class="transition-all rounded-full hover:bg-gray-200/60 dark:hover:bg-gray-800 h-12 cursor-pointer mt-2"
+          :class="[
+            isCollapsed ? 'flex w-12 items-center justify-center px-0' : 'justify-start pl-4',
+            route.name === 'tools'
+              ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400'
+              : '',
+          ]"
+          color="gray"
+          variant="ghost"
+          @click="router.push({ name: 'tools' })"
+        >
+          <UIcon name="i-heroicons-wrench-screwdriver" class="h-5 w-5 shrink-0" :class="[isCollapsed ? '' : 'mr-2']" />
+          <span v-if="!isCollapsed" class="truncate">工具广场</span>
+        </UButton>
+      </UTooltip>
     </div>
 
     <!-- Session List -->

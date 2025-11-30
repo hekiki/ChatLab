@@ -8,6 +8,9 @@ import * as databaseCore from './database/core'
 import * as worker from './worker'
 // 导入解析器模块
 import * as parser from './parser'
+// 导入合并模块
+import * as merger from './merger'
+import type { MergeParams } from '../../src/types/chat'
 
 console.log('[IpcMain] Database, Worker and Parser modules imported')
 
@@ -575,6 +578,58 @@ const mainIpcMain = (win: BrowserWindow) => {
       }
     }
   )
+
+  // ==================== 合并功能 ====================
+
+  /**
+   * 解析文件获取基本信息（用于合并预览）
+   * 使用 Worker 线程异步执行，不阻塞主进程
+   */
+  ipcMain.handle('merge:parseFileInfo', async (_, filePath: string) => {
+    try {
+      // 使用 Worker 线程解析，避免阻塞 UI
+      return await worker.parseFileInfo(filePath)
+    } catch (error) {
+      console.error('解析文件信息失败：', error)
+      throw error
+    }
+  })
+
+  /**
+   * 检测合并冲突
+   */
+  ipcMain.handle('merge:checkConflicts', async (_, filePaths: string[]) => {
+    try {
+      return merger.checkConflicts(filePaths)
+    } catch (error) {
+      console.error('检测冲突失败：', error)
+      throw error
+    }
+  })
+
+  /**
+   * 执行合并
+   */
+  ipcMain.handle('merge:mergeFiles', async (_, params: MergeParams) => {
+    try {
+      return merger.mergeFiles(params)
+    } catch (error) {
+      console.error('合并失败：', error)
+      return { success: false, error: String(error) }
+    }
+  })
+
+  /**
+   * 显示打开对话框（通用）
+   */
+  ipcMain.handle('dialog:showOpenDialog', async (_, options) => {
+    try {
+      return await dialog.showOpenDialog(options)
+    } catch (error) {
+      console.error('显示对话框失败：', error)
+      throw error
+    }
+  })
 }
 
 export default mainIpcMain
