@@ -283,7 +283,7 @@ onMounted(() => {
             {{ tab.label }}
           </button>
           <!-- 年份选择器靠右 -->
-          <UITabs v-model="selectedYear" :items="yearOptions" size="sm" class="ml-auto" />
+          <UITabs v-model="selectedYear" :items="yearOptions" size="sm" class="max-w-100 ml-auto" />
         </div>
       </div>
 

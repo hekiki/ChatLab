@@ -79,3 +79,15 @@ watch(
     <UTabs ref="tabsRef" v-model="selectedValue" :size="size" :items="items" :content="false" class="min-w-max" />
   </div>
 </template>
+
+<style scoped>
+/* 隐藏滚动条但保留滚动功能 */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+</style>
