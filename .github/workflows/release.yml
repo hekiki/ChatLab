@@ -137,9 +137,12 @@ jobs:
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && format('v{0}', inputs.version) || github.ref_name }}
           name: ChatLab ${{ github.event_name == 'workflow_dispatch' && inputs.version || github.ref_name }}
-          draft: true
           repository: hellodigua/ChatLab
+          target_commitish: main
           token: ${{ secrets.GH_TOKEN }}
-          files: dist/*
+          files: |
+            dist/*.exe
+            dist/*.dmg
+            dist/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
