@@ -17,6 +17,7 @@ const sql = ref('SELECT * FROM message LIMIT 10')
 const isExecuting = ref(false)
 const error = ref<string | null>(null)
 const result = ref<SQLResult | null>(null)
+const lastPrompt = ref('') // 记录最后使用的 AI 提示词
 
 // 弹窗状态
 const showAIModal = ref(false)
@@ -107,6 +108,7 @@ function handleInsertColumn(tableName: string, columnName: string) {
 // 处理 AI 生成成功
 function handleAIGenerated(generatedSql: string, explanation: string, prompt: string) {
   addToHistory(prompt, generatedSql, explanation)
+  lastPrompt.value = prompt // 记录提示词
 }
 
 // 处理使用 SQL
@@ -123,6 +125,7 @@ async function handleRunSQL(generatedSql: string) {
 // 从历史记录执行
 async function executeFromHistory(record: AIHistory) {
   sql.value = record.sql
+  lastPrompt.value = record.prompt // 记录历史的提示词
   showHistoryModal.value = false
   await executeSQL()
 }
@@ -187,7 +190,7 @@ onMounted(() => {
       </div>
 
       <!-- 结果区域 -->
-      <ResultTable ref="resultTableRef" :result="result" :error="error" />
+      <ResultTable ref="resultTableRef" :result="result" :error="error" :sql="sql" :prompt="lastPrompt" />
     </div>
 
     <!-- AI 生成弹窗 -->

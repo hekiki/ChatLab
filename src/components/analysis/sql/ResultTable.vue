@@ -1,11 +1,23 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import MarkdownIt from 'markdown-it'
 import type { SQLResult } from './types'
+import { COLUMN_LABELS } from './types'
+
+// 创建 markdown-it 实例
+const md = new MarkdownIt({
+  html: false,
+  breaks: true,
+  linkify: true,
+  typographer: true,
+})
 
 // Props
 const props = defineProps<{
   result: SQLResult | null
   error: string | null
+  sql?: string // 当前 SQL 语句
+  prompt?: string // 用户提示词（AI 生成时）
 }>()
 
 // Emits
@@ -16,6 +28,28 @@ const emit = defineEmits<{
 // 表格排序
 const sortColumn = ref<string | null>(null)
 const sortDirection = ref<'asc' | 'desc'>('asc')
+
+// AI 总结相关状态
+const showSummaryModal = ref(false)
+const isSummarizing = ref(false)
+const summaryContent = ref('')
+const summaryError = ref<string | null>(null)
+const streamingContent = ref('')
+
+// 获取列的中文标签（尝试匹配所有表的列）
+function getColumnLabel(columnName: string): string | null {
+  // 处理带表名前缀的情况，如 "message.sender_id" 或 "m.sender_id"
+  const parts = columnName.split('.')
+  const colName = parts.length > 1 ? parts[parts.length - 1] : columnName
+
+  // 遍历所有表查找匹配
+  for (const tableColumns of Object.values(COLUMN_LABELS)) {
+    if (tableColumns[colName]) {
+      return tableColumns[colName]
+    }
+  }
+  return null
+}
 
 // 排序后的行数据
 const sortedRows = computed(() => {
@@ -84,6 +118,108 @@ function resetSort() {
   sortDirection.value = 'asc'
 }
 
+// ==================== AI 总结功能 ====================
+
+// 构建总结结果的数据（取前 50 行避免 token 过多）
+function buildResultSummary(): string {
+  if (!props.result) return ''
+
+  const maxRows = 50
+  const rows = props.result.rows.slice(0, maxRows)
+
+  // 构建表格形式的结果
+  const header = props.result.columns.join(' | ')
+  const separator = props.result.columns.map(() => '---').join(' | ')
+  const dataRows = rows.map((row) =>
+    row.map((cell) => (cell === null ? 'NULL' : String(cell).slice(0, 50))).join(' | ')
+  )
+
+  let resultText = `| ${header} |\n| ${separator} |\n`
+  resultText += dataRows.map((r) => `| ${r} |`).join('\n')
+
+  if (props.result.rows.length > maxRows) {
+    resultText += `\n\n（仅展示前 ${maxRows} 行，共 ${props.result.rowCount} 行）`
+  }
+
+  return resultText
+}
+
+// 打开总结弹窗并开始总结
+async function openSummaryModal() {
+  showSummaryModal.value = true
+  summaryContent.value = ''
+  summaryError.value = null
+  streamingContent.value = ''
+  await generateSummary()
+}
+
+// AI 总结
+async function generateSummary() {
+  const hasConfig = await window.llmApi.hasConfig()
+  if (!hasConfig) {
+    summaryError.value = '请先在设置中配置 AI 服务'
+    return
+  }
+
+  isSummarizing.value = true
+  summaryError.value = null
+  streamingContent.value = ''
+
+  try {
+    const resultSummary = buildResultSummary()
+
+    let contextInfo = ''
+    if (props.prompt) {
+      contextInfo = `用户的查询意图：${props.prompt}\n\n`
+    }
+    if (props.sql) {
+      contextInfo += `执行的 SQL 语句：\n\`\`\`sql\n${props.sql}\n\`\`\`\n\n`
+    }
+
+    const prompt = `请分析以下 SQL 查询结果，用简洁的中文总结关键发现和洞察。
+
+${contextInfo}查询结果（共 ${props.result?.rowCount || 0} 行）：
+
+${resultSummary}
+
+请提供：
+1. 结果概述（一句话总结）
+2. 关键发现（2-4 个要点）
+3. 如有明显的趋势或异常，请指出`
+
+    const result = await window.llmApi.chatStream(
+      [
+        { role: 'system', content: '你是一个数据分析专家，擅长从查询结果中提取关键信息和洞察。请用简洁清晰的中文回答。' },
+        { role: 'user', content: prompt },
+      ],
+      { temperature: 0.3, maxTokens: 1000 },
+      (chunk) => {
+        if (chunk.content) {
+          streamingContent.value += chunk.content
+        }
+      }
+    )
+
+    if (result.success) {
+      summaryContent.value = streamingContent.value
+    } else {
+      summaryError.value = result.error || '总结失败'
+    }
+  } catch (err: any) {
+    summaryError.value = err.message || String(err)
+  } finally {
+    isSummarizing.value = false
+  }
+}
+
+// 关闭总结弹窗
+function closeSummaryModal() {
+  showSummaryModal.value = false
+  summaryContent.value = ''
+  summaryError.value = null
+  streamingContent.value = ''
+}
+
 defineExpose({ resetSort })
 </script>
 
@@ -116,10 +252,16 @@ defineExpose({ resetSort })
           {{ result.duration }} ms
         </span>
       </div>
-      <UButton variant="ghost" size="xs" @click="copyAsCSV">
-        <UIcon name="i-heroicons-clipboard-document" class="mr-1 h-4 w-4" />
-        复制 CSV
-      </UButton>
+      <div class="flex items-center gap-2">
+        <UButton variant="ghost" size="xs" @click="openSummaryModal">
+          <UIcon name="i-heroicons-sparkles" class="mr-1 h-4 w-4" />
+          总结一下
+        </UButton>
+        <UButton variant="ghost" size="xs" @click="copyAsCSV">
+          <UIcon name="i-heroicons-clipboard-document" class="mr-1 h-4 w-4" />
+          复制 CSV
+        </UButton>
+      </div>
     </div>
 
     <!-- 结果表格 -->
@@ -130,15 +272,18 @@ defineExpose({ resetSort })
             <th
               v-for="(column, index) in result.columns"
               :key="index"
-              class="cursor-pointer whitespace-nowrap px-4 py-2 text-left text-xs font-medium uppercase text-gray-500 transition-colors hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+              class="cursor-pointer whitespace-nowrap px-4 py-2 text-left text-xs font-medium transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
               @click="handleSort(column)"
             >
               <div class="flex items-center gap-1">
-                <span>{{ column }}</span>
+                <div class="flex flex-col">
+                  <span class="text-gray-700 dark:text-gray-300">{{ getColumnLabel(column) || column }}</span>
+                  <span v-if="getColumnLabel(column)" class="font-mono text-[10px] text-gray-400">{{ column }}</span>
+                </div>
                 <UIcon
                   v-if="sortColumn === column"
                   :name="sortDirection === 'asc' ? 'i-heroicons-chevron-up' : 'i-heroicons-chevron-down'"
-                  class="h-3 w-3"
+                  class="h-3 w-3 text-gray-500"
                 />
               </div>
             </th>
@@ -179,6 +324,51 @@ defineExpose({ resetSort })
         <p class="mt-1 text-xs text-gray-400">仅支持 SELECT 查询，结果最多返回 1000 行</p>
       </div>
     </div>
+
+    <!-- AI 总结弹窗 -->
+    <UModal v-model:open="showSummaryModal">
+      <template #content>
+        <div class="max-h-[70vh] overflow-hidden p-6">
+          <div class="mb-4 flex items-center gap-2">
+            <UIcon name="i-heroicons-sparkles" class="h-5 w-5 text-pink-500" />
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">AI 结果总结</h3>
+          </div>
+
+          <!-- 加载状态 -->
+          <div v-if="isSummarizing && !streamingContent" class="flex items-center justify-center py-8">
+            <UIcon name="i-heroicons-arrow-path" class="h-6 w-6 animate-spin text-pink-500" />
+            <span class="ml-2 text-sm text-gray-500">AI 正在分析结果...</span>
+          </div>
+
+          <!-- 流式输出 / 最终结果 -->
+          <div v-else-if="streamingContent || summaryContent" class="max-h-[50vh] overflow-y-auto">
+            <div
+              class="prose prose-sm max-w-none rounded-lg bg-gray-50 p-4 dark:prose-invert dark:bg-gray-900"
+              v-html="md.render(streamingContent || summaryContent)"
+            />
+            <div v-if="isSummarizing" class="mt-2 flex items-center text-xs text-gray-400">
+              <UIcon name="i-heroicons-arrow-path" class="mr-1 h-3 w-3 animate-spin" />
+              生成中...
+            </div>
+          </div>
+
+          <!-- 错误提示 -->
+          <div v-if="summaryError" class="rounded-lg bg-red-50 p-4 dark:bg-red-950">
+            <p class="text-sm text-red-600 dark:text-red-400">{{ summaryError }}</p>
+          </div>
+
+          <!-- 底部按钮 -->
+          <div class="mt-4 flex justify-end gap-2">
+            <UButton v-if="!isSummarizing && summaryContent" variant="outline" @click="generateSummary">
+              <UIcon name="i-heroicons-arrow-path" class="mr-1 h-4 w-4" />
+              重新生成
+            </UButton>
+            <UButton variant="ghost" @click="closeSummaryModal">关闭</UButton>
+          </div>
+        </div>
+      </template>
+    </UModal>
   </div>
 </template>
 
+<!-- Markdown 样式已提取到全局 src/assets/styles/markdown.css -->

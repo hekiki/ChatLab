@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
+@import './markdown.css';
 
 /* 自定义主题颜色 - 使用 @theme static 定义色板 */
 @theme static {
