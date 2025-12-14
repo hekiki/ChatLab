@@ -99,7 +99,7 @@ watch(
               <!-- 当前连续 -->
               <div v-if="item.currentStreak > 0" class="shrink-0">
                 <span
-                  class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                  class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400 whitespace-nowrap"
                 >
                   当前连续 {{ item.currentStreak }} 天 🔥
                 </span>

@@ -11,7 +11,6 @@ import AITab from '@/components/analysis/AITab.vue'
 import OverviewTab from './components/OverviewTab.vue'
 import RankingTab from './components/RankingTab.vue'
 import QuotesTab from './components/QuotesTab.vue'
-import RelationshipsTab from './components/RelationshipsTab.vue'
 import MemberTab from './components/MemberTab.vue'
 import PageHeader from '@/components/layout/PageHeader.vue'
 
@@ -34,12 +33,11 @@ const availableYears = ref<number[]>([])
 const selectedYear = ref<number>(0) // 0 表示全部
 const isInitialLoad = ref(true) // 用于跳过初始加载时的 watch 触发，并控制首屏加载状态
 
-// Tab 配置（SQL实验室已整合到AI实验室中，趋势已合并到总览）
+// Tab 配置
 const tabs = [
   { id: 'overview', label: '总览', icon: 'i-heroicons-chart-pie' },
   { id: 'ranking', label: '群榜单', icon: 'i-heroicons-trophy' },
   { id: 'quotes', label: '群语录', icon: 'i-heroicons-chat-bubble-bottom-center-text' },
-  { id: 'relationships', label: '群关系', icon: 'i-heroicons-heart' },
   { id: 'members', label: '群成员', icon: 'i-heroicons-user-group' },
   { id: 'ai', label: 'AI实验室', icon: 'i-heroicons-sparkles' },
 ]
@@ -321,16 +319,11 @@ onMounted(() => {
               :session-id="currentSessionId!"
               :time-filter="timeFilter"
             />
-            <RelationshipsTab
-              v-else-if="activeTab === 'relationships'"
-              :key="'relationships-' + selectedYear"
-              :session-id="currentSessionId!"
-              :time-filter="timeFilter"
-            />
             <MemberTab
               v-else-if="activeTab === 'members'"
               :key="'members-' + selectedYear"
               :session-id="currentSessionId!"
+              :time-filter="timeFilter"
               @data-changed="loadData"
             />
             <AITab

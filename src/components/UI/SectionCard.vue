@@ -22,7 +22,7 @@ const showDivider = defineModel('showDivider', { default: true })
     <div class="px-5 py-3" :class="{ 'border-b border-gray-200 dark:border-gray-800': showDivider && $slots.default }">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
+          <p class="font-semibold text-gray-900 dark:text-white whitespace-nowrap">{{ title }}</p>
           <p v-if="description" class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             {{ description }}
           </p>

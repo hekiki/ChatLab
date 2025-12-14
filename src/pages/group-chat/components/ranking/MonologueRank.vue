@@ -61,7 +61,7 @@ watch(
           <span class="text-2xl">🏆</span>
           <span class="font-semibold text-gray-900 dark:text-white">历史最高连击纪录</span>
         </div>
-        <div class="mt-2 flex items-baseline gap-2">
+        <div class="mt-2 flex items-baseline gap-2 whitespace-nowrap">
           <span class="text-lg font-bold text-amber-600 dark:text-amber-400">
             {{ analysis.maxComboRecord.memberName }}
           </span>

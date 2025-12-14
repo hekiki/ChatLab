@@ -107,9 +107,8 @@ watch(
     <LoadingState v-if="isLoading" text="正在分析复读数据..." />
 
     <div v-else-if="analysis && analysis.totalRepeatChains > 0" class="space-y-6 p-5">
-      <!-- 复读链长度分布 & 最火复读内容 -->
+      <!-- 复读链长度分布 -->
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <!-- 复读链长度分布 -->
         <div class="rounded-lg border border-gray-100 bg-gray-50/50 dark:border-gray-800 dark:bg-gray-800/50">
           <div class="border-b border-gray-100 px-4 py-3 dark:border-gray-800">
             <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">📊 复读链长度分布</h4>

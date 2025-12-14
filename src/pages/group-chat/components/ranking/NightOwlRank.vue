@@ -179,7 +179,7 @@ watch(
               :key="record.memberId"
               class="flex items-center justify-between rounded-lg bg-gray-50 p-3 dark:bg-gray-800/50"
             >
-              <span class="font-medium text-gray-900 dark:text-white">{{ record.name }}</span>
+              <span class="font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ record.name }}</span>
               <div class="text-right">
                 <div class="text-lg font-bold text-pink-600 dark:text-pink-400">{{ record.maxConsecutiveDays }} 天</div>
                 <div v-if="record.currentStreak > 0" class="text-xs text-green-600 dark:text-green-400">

@@ -230,7 +230,7 @@ export function getRepeatAnalysis(sessionId: string, filter?: TimeFilter): any {
     })
   }
   hotContents.sort((a, b) => b.maxChainLength - a.maxChainLength)
-  const top50HotContents = hotContents.slice(0, 50)
+  const top50HotContents = hotContents.slice(0, 100)
 
   return {
     originators: buildRankList(originatorCount, totalRepeatChains),

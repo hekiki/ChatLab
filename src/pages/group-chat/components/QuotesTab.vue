@@ -15,12 +15,12 @@ const props = defineProps<{
 
 // 子 Tab 配置
 const subTabs = [
-  { id: 'catchphrase', label: '口头禅', icon: 'i-heroicons-chat-bubble-bottom-center-text' },
   { id: 'hot-repeat', label: '最火复读', icon: 'i-heroicons-fire' },
+  { id: 'catchphrase', label: '口头禅', icon: 'i-heroicons-chat-bubble-bottom-center-text' },
   { id: 'keyword', label: '关键词分析', icon: 'i-heroicons-magnifying-glass' },
 ]
 
-const activeSubTab = ref('catchphrase')
+const activeSubTab = ref('hot-repeat')
 </script>
 
 <template>

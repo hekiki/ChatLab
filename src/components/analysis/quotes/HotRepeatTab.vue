@@ -57,7 +57,7 @@ watch(
       :items="repeatAnalysis.hotContents"
       title="🔥 最火复读内容"
       description="单次复读参与人数最多的内容"
-      :topN="10"
+      :topN="50"
       countTemplate="共 {count} 条热门复读"
     >
       <template #item="{ item, index }">
@@ -70,7 +70,9 @@ watch(
           </span>
           <span class="shrink-0 text-lg font-bold text-pink-600">{{ item.maxChainLength }}人</span>
           <div class="flex flex-1 items-center gap-1 overflow-hidden text-sm">
-            <span class="shrink-0 font-medium text-gray-900 dark:text-white">{{ item.originatorName }}：</span>
+            <span class="shrink-0 font-medium text-gray-900 dark:text-white whitespace-nowrap">
+              {{ item.originatorName }}：
+            </span>
             <span class="truncate text-gray-600 dark:text-gray-400" :title="item.content">
               {{ truncateContent(item.content) }}
             </span>
