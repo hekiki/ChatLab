@@ -16,12 +16,14 @@ function getAnalyticsPath(): string {
 // 分析数据结构
 interface AnalyticsData {
   lastReportDate: string | null
+  firstReportDate: string | null // 用于判断新老用户
   enabled: boolean // 是否启用统计
 }
 
 // 默认配置
 const defaultAnalyticsData: AnalyticsData = {
   lastReportDate: null,
+  firstReportDate: null,
   enabled: true, // 默认启用
 }
 
@@ -117,14 +119,23 @@ export function trackDailyActive(): void {
     }
 
     const today = getTodayString()
+    const isNew = data.firstReportDate === null
+
+    // 新用户记录首次使用日期
+    if (isNew) {
+      data.firstReportDate = today
+    }
 
     // 检查今天是否已经上报过
     if (data.lastReportDate === today) {
+      if (isNew) {
+        saveAnalyticsData(data)
+      }
       return
     }
 
     // 上报每日活跃事件
-    trackEvent('app_daily_active')
+    trackEvent('app_daily_active', { is_new: isNew ? 1 : 0 })
 
     data.lastReportDate = today
     saveAnalyticsData(data)

@@ -4,19 +4,28 @@
 
 我们拒绝将你的隐私上传云端，而是把强大的分析能力直接塞进你的电脑。
 
-它提供了对多平台的聊天记录进行导入、分析、可视化和 AI 助理探索的能力。
-
-项目基于 Electron + Vue 3 + TypeScript 构建，内置大文件流式处理、Worker 多线程、AI Agent、聊天记录合并等能力。
-
-该项目为个人开源项目，核心功能仅开发了两周，目前还处于早期阶段，因此可能还包含了众多不足，若您在使用当中遇到了任何问题，欢迎通过 GitHub Issue 或联系我反馈。
+项目目前还处于早期迭代阶段，因此还有很多缺陷和未完成的功能。若您在探索当中遇到了任何问题，欢迎随时反馈。
 
 ## 核心特性
 
-- 多格式导入：内置解析器可识别多种导出聊天记录的格式，并统一转为标准模型
-- 深度分析：群聊/私聊拥有总览、榜单、语录、成员、AI 实验室等多个仪表盘，涵盖活跃度、时间规律、龙王/夜猫/复读等指标
-- AI 助手：集成 DeepSeek、通义千问等 LLM，支持关键词检索、RAG 回答、SQL 实验室、Function Calling 工具
-- 流式导入与合并：即使是百万级消息量也能通过流式解析、延迟索引、临时数据库缓存实现稳定导入与冲突检测
-- 跨平台发行：electron-builder 提供 macOS、Windows、Linux 三端打包脚本
+- 🚀 **流式处理，极致性能**：使用流式计算与多线程并行架构，就算是百万条级别的聊天记录，依然拥有丝滑交互和响应。
+- 🔒 **本地分析，保护隐私**：聊天记录和配置都存在你的本地数据库，所有分析都在本地进行，拔了网线也能用（AI 功能除外）。
+- 🤖 **智能 AI Agent**：集成 10+ Function Calling 工具，支持动态调度，深度挖掘聊天记录中的更多有趣。
+- 📊 **多维数据可视化**：提供活跃度趋势、时间规律分布、成员排行等多个维度的直观分析图表。
+- 🧩 **格式标准化**：通过强大的数据抽象层，抹平不同社交平台的格式差异，任何聊天记录都能分析。
+
+## 使用指南
+
+- [导出聊天记录指南](https://chatlab.fun/usage/how-to-export.html)
+- [导入聊天记录指南](https://chatlab.fun/usage/how-to-import.html)
+- [标准化格式规范](https://chatlab.fun/usage/chatlab-format.html)
+- [故障排查指南](https://chatlab.fun/usage/troubleshooting.html)
+
+## 预览界面
+
+更多请前往官网 [chatLab.fun](https://chatlab.fun)
+
+![预览界面](/public/images/intro.png)
 
 ## 系统架构
 
@@ -38,22 +47,39 @@
 - `src/stores` 通过 Pinia 管理会话、布局、AI 提示词等状态；`src/composables/useAIChat.ts` 封装 AI 对话流程
 - 预加载脚本 `electron/preload/index.ts` 暴露 `window.chatApi/mergeApi/aiApi/llmApi`，确保渲染进程与主进程通信安全隔离
 
-## AI 与数据模型
+## 本地运行
 
-- 每次导入会生成独立 SQLite 数据库，表包括 `meta`、`member`、`member_name_history`、`message`
-- 导入流程：解析文件 → 临时数据库写入 → Worker 流式导入 → 统一 Schema → 分析/AI 查询
-- AI 对话记录使用独立 SQLite（`ai_conversation`、`ai_message`），并且通过 `window.aiApi` 暴露搜索、上下文、RAG、Function Calling 等接口
-- 若需修改表结构，务必同时更新 `electron/main/database/core.ts` 与 `electron/main/worker/import/streamImport.ts`
+### 启动步骤
 
-## 常见问题
+Node.js 环境依赖 v20+
 
-若 Electron 在安装或启动时出现依赖异常，可尝试：
+```bash
+# 安装依赖
+pnpm install
+
+# 启动开发服务器
+pnpm run dev
+```
+
+若 Electron 在启动时异常，可尝试使用 `electron-fix`：
 
 ```bash
 npm install electron-fix -g
 electron-fix start
 ```
 
+## 贡献指南
+
+提交 Pull Request 前请遵循以下原则：
+
+- 明显的 Bug 修复可直接提交
+- 对于新功能，请先提交 Issue 进行讨论，**未经讨论直接提交的 PR 会被关闭**
+- 一个 PR 尽量只做一件事，若改动较大，请考虑拆分为多个独立的 PR
+
+## 用户协议
+
+使用本软件前，请阅读 [用户协议](./src/assets/docs/agreement.md)
+
 ## License
 
-MIT
+AGPL-3.0 License
