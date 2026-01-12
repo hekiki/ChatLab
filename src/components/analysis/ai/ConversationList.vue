@@ -307,20 +307,20 @@ defineExpose({
               >
                 <!-- 左侧渐变过渡区域 -->
                 <div
-                  class="absolute inset-y-0 -left-6 w-6 bg-gradient-to-r from-transparent"
+                  class="absolute inset-y-0 -left-6 w-6 bg-linear-to-r from-transparent"
                   :class="[
                     activeId === conv.id
                       ? 'to-gray-100 dark:to-gray-800'
-                      : 'to-white group-hover:to-gray-50 dark:to-gray-900 dark:group-hover:to-gray-800/50',
+                      : 'to-gray-50 group-hover:to-gray-100 dark:to-gray-900 dark:group-hover:to-gray-800',
                   ]"
                 />
-                <!-- 按钮组（实色背景，h-full 确保完全覆盖） -->
+                <!-- 按钮组背景 -->
                 <div
                   class="relative flex h-full items-center gap-0.5 pl-1 pr-0.5"
                   :class="[
                     activeId === conv.id
                       ? 'bg-gray-100 dark:bg-gray-800'
-                      : 'bg-white group-hover:bg-gray-50 dark:bg-gray-900 dark:group-hover:bg-gray-800/50',
+                      : 'bg-gray-50 group-hover:bg-gray-100 dark:bg-gray-900 dark:group-hover:bg-gray-800',
                   ]"
                 >
                   <UButton

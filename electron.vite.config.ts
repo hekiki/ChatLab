@@ -44,7 +44,7 @@ export default defineConfig(() => {
           ui: {
             colors: {
               primary: 'pink', // 使用自定义 pink 作为主色
-              neutral: 'slate',
+              neutral: 'zinc',
             },
           },
         }),

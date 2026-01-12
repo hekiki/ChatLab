@@ -15,6 +15,9 @@
   --color-pink-800: #a01d42;
   --color-pink-900: #84173b;
   --color-pink-950: #4a071c;
+
+  /* 分析页面使用的更深背景 - 统一使用 zinc-900 */
+  --color-page-dark: #18181b;
 }
 
 /* 全局滚动条样式 */

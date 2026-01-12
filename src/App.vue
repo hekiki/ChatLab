@@ -37,6 +37,8 @@ onMounted(async () => {
 <template>
   <UApp :tooltip="tooltip">
     <div class="flex h-screen w-full overflow-hidden bg-white dark:bg-gray-950">
+    <div class="relative flex h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-900">
+      <!-- 主内容区域 -->
       <template v-if="!isInitialized">
         <div class="flex h-full w-full items-center justify-center">
           <div class="flex flex-col items-center justify-center text-center">
@@ -47,7 +49,7 @@ onMounted(async () => {
       </template>
       <template v-else>
         <Sidebar />
-        <main class="flex-1 overflow-hidden">
+        <main class="relative flex-1 overflow-hidden">
           <router-view v-slot="{ Component }">
             <Transition name="page-fade" mode="out-in">
               <component :is="Component" :key="route.path" />
@@ -56,10 +58,7 @@ onMounted(async () => {
         </main>
       </template>
     </div>
-    <SettingModal
-      v-model:open="layoutStore.showSettingModal"
-      @ai-config-saved="promptStore.notifyAIConfigChanged"
-    />
+    <SettingModal v-model:open="layoutStore.showSettingModal" @ai-config-saved="promptStore.notifyAIConfigChanged" />
     <ScreenCaptureModal
       :open="layoutStore.showScreenCaptureModal"
       :image-data="layoutStore.screenCaptureImage"

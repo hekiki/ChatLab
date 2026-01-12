@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import type { AnalysisSession } from '@/types/base'
@@ -23,6 +23,9 @@ const { isSidebarCollapsed: isCollapsed } = storeToRefs(layoutStore)
 const { toggleSidebar } = layoutStore
 const router = useRouter()
 const route = useRoute()
+
+// 是否在首页
+const isHomePage = computed(() => route.path === '/')
 
 // 重命名相关状态
 const showRenameModal = ref(false)
@@ -159,10 +162,10 @@ function getSessionAvatarText(session: AnalysisSession): string {
 
 <template>
   <div
-    class="flex h-full flex-col border-r border-gray-200 bg-gray-50 transition-all duration-300 ease-in-out dark:border-gray-800 dark:bg-gray-900"
-    :class="[isCollapsed ? 'w-20' : 'w-72']"
+    class="flex h-full flex-col border-r border-gray-200/50 transition-all duration-300 ease-in-out dark:border-gray-800/50"
+    :class="[isCollapsed ? 'w-20' : 'w-72', isHomePage ? '' : 'bg-gray-50 dark:bg-gray-900']"
   >
-    <div class="flex flex-col p-4">
+    <div class="flex flex-col p-4 pt-8">
       <!-- Header -->
       <div class="mb-2 flex items-center" :class="[isCollapsed ? 'justify-center' : 'justify-between']">
         <div v-if="!isCollapsed" class="flex items-baseline ml-2">
@@ -283,10 +286,6 @@ function getSessionAvatarText(session: AnalysisSession): string {
           </UTooltip>
         </div>
       </div>
-      <!-- Fade overlay at bottom -->
-      <div
-        class="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-linear-to-t from-gray-50 dark:from-gray-900 to-transparent"
-      />
     </div>
 
     <!-- Rename Modal -->

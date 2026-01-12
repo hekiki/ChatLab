@@ -143,8 +143,8 @@ watch(
   <div
     :class="[
       isVertical
-        ? 'h-full border-r border-gray-200 dark:border-gray-700'
-        : 'border-b border-gray-200 bg-white px-6 dark:border-gray-800 dark:bg-gray-900',
+        ? 'h-full border-r border-gray-200/50 dark:border-gray-700/50'
+        : 'border-b border-gray-200/50 px-6 dark:border-gray-800/50',
     ]"
   >
     <div ref="containerRef" class="relative" :class="[isVertical ? 'flex flex-col gap-1' : 'flex gap-1']">

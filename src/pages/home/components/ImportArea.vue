@@ -153,25 +153,29 @@ function getProgressDetail(): string {
     >
       <template #default="{ isDragOver }">
         <div
-          class="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-pink-300/50 bg-white/50 px-8 py-8 backdrop-blur-sm transition-all duration-300 hover:border-pink-400 hover:bg-white/80 hover:shadow-lg hover:shadow-pink-500/10 focus:outline-none focus:ring-4 focus:ring-pink-500/20 sm:px-12 sm:py-12 dark:border-pink-700/50 dark:bg-gray-900/50 dark:hover:border-pink-500 dark:hover:bg-gray-900/80"
+          class="group relative flex w-full cursor-pointer flex-col items-center justify-center rounded-3xl border border-gray-200/50 bg-white/40 px-8 py-10 backdrop-blur-md transition-all duration-300 hover:border-pink-500/30 hover:bg-white/60 hover:shadow-2xl hover:shadow-pink-500/10 focus:outline-none focus:ring-4 focus:ring-pink-500/20 sm:px-12 sm:py-14 dark:border-white/10 dark:bg-white/5 dark:hover:border-pink-500/30 dark:hover:bg-white/10"
           :class="{
-            'border-pink-500 bg-pink-50/50 dark:border-pink-400 dark:bg-pink-900/20': isDragOver && !isImporting,
+            'border-pink-500/50 bg-pink-50/50 dark:border-pink-400/50 dark:bg-pink-500/10': isDragOver && !isImporting,
             'cursor-not-allowed opacity-70': isImporting,
-            'hover:scale-[1.02]': !isImporting,
+            'hover:scale-[1.01]': !isImporting,
           }"
           @click="!isImporting && handleClickImport()"
         >
           <!-- Icon -->
           <div
-            class="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-rose-100 transition-transform duration-300 dark:from-pink-900/30 dark:to-rose-900/30"
+            class="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-pink-50 transition-transform duration-300 group-hover:scale-110 dark:bg-pink-500/10"
             :class="{ 'scale-110': isDragOver && !isImporting, 'animate-pulse': isImporting }"
           >
             <UIcon
               v-if="!isImporting"
               name="i-heroicons-arrow-up-tray"
-              class="h-8 w-8 text-pink-600 transition-transform group-hover:-translate-y-1 dark:text-pink-400"
+              class="h-10 w-10 text-pink-600 transition-transform duration-200 group-hover:-translate-y-1 dark:text-pink-400"
             />
-            <UIcon v-else name="i-heroicons-arrow-path" class="h-8 w-8 animate-spin text-pink-600 dark:text-pink-400" />
+            <UIcon
+              v-else
+              name="i-heroicons-arrow-path"
+              class="h-10 w-10 animate-spin text-pink-600 dark:text-pink-400"
+            />
           </div>
 
           <!-- Text -->
@@ -219,6 +223,8 @@ function getProgressDetail(): string {
       <UButton v-if="hasImportLog" size="xs" @click="openLatestImportLog">{{ t('home.import.viewLog') }}</UButton>
     </div>
 
-    <UButton @click="openTutorial">{{ t('home.import.tutorial') }}</UButton>
+    <UButton @click="openTutorial" trailing-icon="i-heroicons-chevron-right-20-solid">
+      {{ t('home.import.tutorial') }}
+    </UButton>
   </div>
 </template>

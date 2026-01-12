@@ -24,20 +24,7 @@ const features = computed(() => [
 </script>
 
 <template>
-  <div class="relative flex h-full w-full overflow-hidden bg-gray-50 dark:bg-gray-950">
-    <!-- Animated Background -->
-    <div class="absolute inset-0 overflow-hidden pointer-events-none">
-      <div
-        class="absolute -top-[20%] -left-[10%] h-[70%] w-[70%] rounded-full bg-purple-200/30 blur-[120px] mix-blend-multiply animate-blob dark:bg-purple-900/20 dark:mix-blend-screen"
-      ></div>
-      <div
-        class="absolute -top-[20%] -right-[10%] h-[70%] w-[70%] rounded-full bg-pink-200/30 blur-[120px] mix-blend-multiply animate-blob animation-delay-2000 dark:bg-pink-900/20 dark:mix-blend-screen"
-      ></div>
-      <div
-        class="absolute -bottom-[20%] left-[20%] h-[70%] w-[70%] rounded-full bg-blue-200/30 blur-[120px] mix-blend-multiply animate-blob animation-delay-4000 dark:bg-blue-900/20 dark:mix-blend-screen"
-      ></div>
-    </div>
-
+  <div class="relative flex h-full w-full overflow-hidden pt-8">
     <!-- Content Container -->
     <div class="relative h-full w-full overflow-y-auto">
       <div class="flex min-h-full w-full flex-col items-center justify-center px-4 py-12">

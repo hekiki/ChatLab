@@ -13,7 +13,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="border-b border-gray-200 bg-white px-6 pt-4 pb-2 dark:border-gray-800 dark:bg-gray-900">
+  <div class="border-b border-gray-200/50 px-6 pb-2 dark:border-gray-800/50">
     <!-- 标题区域 -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">

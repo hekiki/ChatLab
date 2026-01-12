@@ -27,7 +27,7 @@
       "error": "Import interrupted"
     },
     "processed": "{count} messages processed",
-    "tutorial": "View import tutorial →",
+    "tutorial": "View import tutorial",
     "viewLog": "View import log",
     "cannotReadPath": "Cannot read file path",
     "preparing": "Preparing import...",
@@ -48,4 +48,3 @@
     "failed": "Migration failed"
   }
 }
-
