@@ -198,7 +198,7 @@
   },
   "about": {
     "title": "关于 ChatLab",
-    "description": "聊天记录分析工具",
+    "description": "本地化的聊天记录分析工具，通过 SQL 和 AI Agent 回顾你的社交记忆。",
     "version": "版本",
     "checkUpdate": "检查更新",
     "checking": "检查中...",

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
+import { useLLMStore, type AIServiceConfigDisplay } from '@/stores/llm'
 import AIModelEditModal from './AIModelEditModal.vue'
 import AlertTips from './AlertTips.vue'
 
@@ -11,65 +13,19 @@ const emit = defineEmits<{
   'config-changed': []
 }>()
 
-// ============ 类型定义 ============
-
-interface AIServiceConfig {
-  id: string
-  name: string
-  provider: string
-  apiKey: string
-  apiKeySet: boolean
-  model?: string
-  baseUrl?: string
-  createdAt: number
-  updatedAt: number
-}
-
-interface Provider {
-  id: string
-  name: string
-  description: string
-  defaultBaseUrl: string
-  models: Array<{ id: string; name: string; description?: string }>
-}
-
 const aiTips = JSON.parse(localStorage.getItem('chatlab_app_config') || '{}').aiTips || {}
 
-// ============ 状态 ============
+// ============ Store ============
 
-const isLoading = ref(false)
-const providers = ref<Provider[]>([])
-const configs = ref<AIServiceConfig[]>([])
-const activeConfigId = ref<string | null>(null)
+const llmStore = useLLMStore()
+const { configs, providers, activeConfigId, isLoading, isMaxConfigs } = storeToRefs(llmStore)
 
 // 弹窗状态
 const showEditModal = ref(false)
 const editMode = ref<'add' | 'edit'>('add')
-const editingConfig = ref<AIServiceConfig | null>(null)
-
-// ============ 计算属性 ============
-
-const isMaxConfigs = computed(() => configs.value.length >= 10)
+const editingConfig = ref<AIServiceConfigDisplay | null>(null)
 
 // ============ 方法 ============
-
-async function loadData() {
-  isLoading.value = true
-  try {
-    const [providersData, configsData, activeId] = await Promise.all([
-      window.llmApi.getProviders(),
-      window.llmApi.getAllConfigs(),
-      window.llmApi.getActiveConfigId(),
-    ])
-    providers.value = providersData
-    configs.value = configsData
-    activeConfigId.value = activeId
-  } catch (error) {
-    console.error('加载配置失败：', error)
-  } finally {
-    isLoading.value = false
-  }
-}
 
 function openAddModal() {
   editMode.value = 'add'
@@ -77,14 +33,14 @@ function openAddModal() {
   showEditModal.value = true
 }
 
-function openEditModal(config: AIServiceConfig) {
+function openEditModal(config: AIServiceConfigDisplay) {
   editMode.value = 'edit'
   editingConfig.value = config
   showEditModal.value = true
 }
 
 async function handleModalSaved() {
-  await loadData()
+  await llmStore.refreshConfigs()
   emit('config-changed')
 }
 
@@ -92,7 +48,7 @@ async function deleteConfig(id: string) {
   try {
     const result = await window.llmApi.deleteConfig(id)
     if (result.success) {
-      await loadData()
+      await llmStore.refreshConfigs()
       emit('config-changed')
     } else {
       console.error('删除配置失败：', result.error)
@@ -103,16 +59,9 @@ async function deleteConfig(id: string) {
 }
 
 async function setActive(id: string) {
-  try {
-    const result = await window.llmApi.setActiveConfig(id)
-    if (result.success) {
-      activeConfigId.value = id
-      emit('config-changed')
-    } else {
-      console.error('设置激活配置失败：', result.error)
-    }
-  } catch (error) {
-    console.error('设置激活配置失败：', error)
+  const success = await llmStore.setActiveConfig(id)
+  if (success) {
+    emit('config-changed')
   }
 }
 
@@ -123,20 +72,25 @@ function getProviderName(providerId: string): string {
   if (translated !== key) {
     return translated
   }
-  // Fallback to original name
-  return providers.value.find((p) => p.id === providerId)?.name || providerId
+  // Fallback to store method
+  return llmStore.getProviderName(providerId)
 }
 
 // ============ 暴露方法 ============
 
 function refresh() {
-  loadData()
+  llmStore.refreshConfigs()
 }
 
 defineExpose({ refresh })
 
 onMounted(() => {
-  loadData()
+  // 如果 Store 未初始化，则初始化；否则刷新
+  if (!llmStore.isInitialized) {
+    llmStore.init()
+  } else {
+    llmStore.refreshConfigs()
+  }
 })
 </script>
 

@@ -12,6 +12,7 @@ import { useSessionStore } from '@/stores/session'
 import { useLayoutStore } from '@/stores/layout'
 import { usePromptStore } from '@/stores/prompt'
 import { useSettingsStore } from '@/stores/settings'
+import { useLLMStore } from '@/stores/llm'
 
 const { t } = useI18n()
 
@@ -19,6 +20,7 @@ const sessionStore = useSessionStore()
 const layoutStore = useLayoutStore()
 const promptStore = usePromptStore()
 const settingsStore = useSettingsStore()
+const llmStore = useLLMStore()
 const { isInitialized } = storeToRefs(sessionStore)
 const route = useRoute()
 
@@ -30,6 +32,8 @@ const tooltip = {
 onMounted(async () => {
   // 初始化语言设置（同步 i18n 和 dayjs）
   settingsStore.initLocale()
+  // 初始化 LLM 配置（预加载，避免首次使用时延迟）
+  llmStore.init()
   // 从数据库加载会话列表
   await sessionStore.loadSessions()
 })
